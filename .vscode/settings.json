@@ -1,5 +1,7 @@
 {
     "files.associations": {
+        "*.m": "matlab",
+        "*.csv": "csv",
         "dense": "cpp",
         "chrono": "cpp",
         "thread": "cpp",
@@ -71,6 +73,14 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "charconv": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "format": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "span": "cpp",
+        "stop_token": "cpp"
     }
 }

@@ -3,7 +3,7 @@
 #include <chrono>
 #include <thread>
 #include <fstream>
-
+#include  "interpolate.h"
 
 using namespace ur_rtde;
 using namespace std::chrono;
@@ -21,7 +21,7 @@ void thread_ur_record_data()
 {
 
     RTDEReceiveInterface rtde_receive("192.168.3.101");
-    csv_record.open("/home/k/UR_RTDE_Examples/ur_frcition.csv");
+    csv_record.open("ur_frcition.csv");
 
     if (!csv_record.is_open())
     {
@@ -55,12 +55,12 @@ int main(int argc, char *argv[])
     RTDEControlInterface rtde_control("192.168.3.101");
 
     std::vector<double> init_q = {
-        0,
-        0,
-        -120 * deg2rad,
-        -120 * deg2rad,
-        -120 * deg2rad,
-        -120 * deg2rad,
+        175 * deg2rad,
+        175 * deg2rad,
+        175 * deg2rad,
+        175 * deg2rad,
+        175 * deg2rad,
+        175 * deg2rad,
     };
     signal(SIGINT, raiseFlag);
     rtde_control.moveJ(init_q, 0.6, 1.4, false);
@@ -68,35 +68,75 @@ int main(int argc, char *argv[])
     sleep(2);
     std::thread recored_thread{thread_ur_record_data};
 
-    direction = 0;
-    for (; direction < 2 && flag_loop; direction++)
+    rocos::R_INTERP T_VEL;
+    bool isplanned = T_VEL.planTrapezoidProfile(0, 175 * deg2rad, -175 * deg2rad, 0, 0, 1 * deg2rad, 3 * deg2rad);
+    if (!isplanned)
     {
-        if (direction % 2 == 0)
-        {
-
-            init_q[0] = -120 * deg2rad;
-            init_q[1] = -120 * deg2rad;
-            init_q[2] = 0;
-            init_q[3] = 0;
-            init_q[4] = 0;
-            init_q[5] = 0;
-            // for (auto &iot : init_q)
-            //     iot = -120 * deg2rad;
-        }
-        else
-        {
-            init_q[0] = 0;
-            init_q[1] = 0;
-            init_q[2] = -120 * deg2rad;
-            init_q[3] = -120 * deg2rad;
-            init_q[4] = -120 * deg2rad;
-            init_q[5] = -120 * deg2rad;
-
-            // for (auto &iot : init_q)
-            //     iot = 0;
-        }
-        rtde_control.moveJ(init_q, 2 * deg2rad, 4 * deg2rad, false);
+        std::cout << "规划失败" << std::endl;
+        flag_loop = false;
+        exit(-1);
     }
+    double t_total_1 =  T_VEL.getDuration();
+
+    double pos_lim = (175) * deg2rad;
+    double vel_lim = (3) * deg2rad;
+
+    double velocity       = 0.5;
+    double acceleration   = 0.5;
+    double servo_dt             = 1.0 / 500;  // 2ms
+    double lookahead_time = 0.1;
+    double gain           = 300;
+
+    for(double dt = 0;dt<=t_total_1;dt+=0.002)
+    {
+        auto t_start = high_resolution_clock::now( );
+
+        init_q[3] = T_VEL.pos(dt);
+        double ref_pos = pos_lim * cos(vel_lim * dt / pos_lim);
+        init_q[0] = ref_pos;
+        init_q[1] = ref_pos;
+        init_q[2] = ref_pos;
+        init_q[4] = ref_pos;
+        init_q[5] = ref_pos;
+        rtde_control.servoJ( joint_command[ i ].position, velocity, acceleration, servo_dt, lookahead_time, gain );
+        auto t_stop     = high_resolution_clock::now( );
+        auto t_duration = std::chrono::duration< double >( t_stop - t_start );
+         if ( t_duration.count( ) < 0.002 )
+        {
+            std::this_thread::sleep_for( std::chrono::duration< double >(  0.002  - t_duration.count( ) ) );
+        }
+    }
+
+
+     isplanned = T_VEL.planTrapezoidProfile(0,-175 * deg2rad, 175 * deg2rad, 0, 0, 1 * deg2rad, 3 * deg2rad);
+    if (!isplanned)
+    {
+        std::cout << "规划失败" << std::endl;
+        flag_loop = false;
+        exit(-1);
+    }
+    double t_total_2 =  T_VEL.getDuration();
+
+    for(double dt = t_total_1;dt<=t_total_1+t_total_2;dt+=0.002)
+    {
+        auto t_start = high_resolution_clock::now( );
+
+        init_q[3] = T_VEL.pos(dt-t_total_1);
+        double ref_pos = pos_lim * cos(vel_lim * dt / pos_lim);
+        init_q[0] = ref_pos;
+        init_q[1] = ref_pos;
+        init_q[2] = ref_pos;
+        init_q[4] = ref_pos;
+        init_q[5] = ref_pos;
+        rtde_control.servoJ( joint_command[ i ].position, velocity, acceleration, servo_dt, lookahead_time, gain );
+        auto t_stop     = high_resolution_clock::now( );
+        auto t_duration = std::chrono::duration< double >( t_stop - t_start );
+         if ( t_duration.count( ) < 0.002 )
+        {
+            std::this_thread::sleep_for( std::chrono::duration< double >(  0.002  - t_duration.count( ) ) );
+        }
+    }
+
 
     // Stop the RTDE control script
     rtde_control.stopScript();

@@ -35,13 +35,13 @@ set(List_own moving_fluid my_ur_friction  my_ur_gravity my_ur_gravity_friction_t
 set(LIST ${List_official} ${List_own})
 
 include_directories(3_party_library/plog 3_party_library/track_Ik/include
-                    3_party_library/kdl/include)
+                    3_party_library/kdl/include  ${CMAKE_CURRENT_SOURCE_DIR})
 
 link_directories(3_party_library/track_Ik/lib 3_party_library/kdl/lib)
 
 foreach(list ${LIST})
 
-  add_executable(${list} ${list}.cpp)
+  add_executable(${list} ${list}.cpp  interpolate.cc )
   target_link_libraries(${list} PUBLIC ur_rtde::rtde kdl-1-5 trac_ik  Boost::program_options )
 
 endforeach()
