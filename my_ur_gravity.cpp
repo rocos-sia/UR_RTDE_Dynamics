@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
         init_q[2] = ref_pos;
         init_q[4] = ref_pos;
         init_q[5] = ref_pos;
-        rtde_control.servoJ( joint_command[ i ].position, velocity, acceleration, servo_dt, lookahead_time, gain );
+        rtde_control.servoJ( init_q, velocity, acceleration, servo_dt, lookahead_time, gain );
         auto t_stop     = high_resolution_clock::now( );
         auto t_duration = std::chrono::duration< double >( t_stop - t_start );
          if ( t_duration.count( ) < 0.002 )
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
         init_q[2] = ref_pos;
         init_q[4] = ref_pos;
         init_q[5] = ref_pos;
-        rtde_control.servoJ( joint_command[ i ].position, velocity, acceleration, servo_dt, lookahead_time, gain );
+        rtde_control.servoJ( init_q, velocity, acceleration, servo_dt, lookahead_time, gain );
         auto t_stop     = high_resolution_clock::now( );
         auto t_duration = std::chrono::duration< double >( t_stop - t_start );
          if ( t_duration.count( ) < 0.002 )

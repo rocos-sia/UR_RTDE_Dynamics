@@ -7,7 +7,7 @@
  * @FilePath: \UR_RTDE_Dynamics\interpolate.cc
  */
 
-#include "velocity_profile/interpolate.h"
+#include "interpolate.h"
 
 namespace rocos
 {

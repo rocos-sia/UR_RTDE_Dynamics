@@ -42,6 +42,6 @@ link_directories(3_party_library/track_Ik/lib 3_party_library/kdl/lib)
 foreach(list ${LIST})
 
   add_executable(${list} ${list}.cpp  interpolate.cc )
-  target_link_libraries(${list} PUBLIC ur_rtde::rtde kdl-1-5 trac_ik  Boost::program_options )
+  target_link_libraries(${list} PUBLIC ur_rtde::rtde orocos-kdl.so.1 trac_ik  Boost::program_options )
 
 endforeach()
