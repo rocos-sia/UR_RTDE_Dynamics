@@ -6,3 +6,13 @@
 
 #IncludeRegexTransform: 
 
+/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/io_example.cpp
+ur_rtde/rtde_io_interface.h
+-
+ur_rtde/rtde_receive_interface.h
+-
+iostream
+-
+thread
+-
+

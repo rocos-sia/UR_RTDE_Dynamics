@@ -6,3 +6,7 @@
 
 #IncludeRegexTransform: 
 
+/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/move_until_contact.cpp
+ur_rtde/rtde_control_interface.h
+-
+

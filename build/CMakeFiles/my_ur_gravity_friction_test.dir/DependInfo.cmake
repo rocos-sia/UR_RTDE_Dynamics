@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/k/UR_RTDE_Examples/my_ur_gravity_friction_test.cpp" "/home/k/UR_RTDE_Examples/build/CMakeFiles/my_ur_gravity_friction_test.dir/my_ur_gravity_friction_test.cpp.o"
+  "/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/my_ur_gravity_friction_test.cpp" "/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/build/CMakeFiles/my_ur_gravity_friction_test.dir/my_ur_gravity_friction_test.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

@@ -6,5 +6,5 @@ CXX_FLAGS = -O3 -DNDEBUG   -std=gnu++11
 
 CXX_DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_ATOMIC_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK -DBOOST_THREAD_DYN_LINK
 
-CXX_INCLUDES = -I/home/k/UR_RTDE_Examples/3_party_library/plog -I/home/k/UR_RTDE_Examples/3_party_library/track_Ik/include -I/home/k/UR_RTDE_Examples/3_party_library/kdl/include 
+CXX_INCLUDES = -I/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/3_party_library/plog -I/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/3_party_library/track_Ik/include -I/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/3_party_library/kdl/include 
 

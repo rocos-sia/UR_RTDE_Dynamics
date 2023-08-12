@@ -6,5 +6,5 @@ CXX_FLAGS = -O3 -DNDEBUG -fPIC   -std=gnu++11
 
 CXX_DEFINES = -Dfilter_iir_EXPORTS
 
-CXX_INCLUDES = -I/home/k/UR_RTDE_Examples/3_party_library/filter_iir/include 
+CXX_INCLUDES = -I/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/3_party_library/filter_iir/include 
 

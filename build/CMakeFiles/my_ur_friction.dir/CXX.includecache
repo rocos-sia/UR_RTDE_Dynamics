@@ -6,3 +6,15 @@
 
 #IncludeRegexTransform: 
 
+/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/my_ur_friction.cpp
+ur_rtde/rtde_control_interface.h
+-
+ur_rtde/rtde_receive_interface.h
+-
+chrono
+-
+thread
+-
+fstream
+-
+

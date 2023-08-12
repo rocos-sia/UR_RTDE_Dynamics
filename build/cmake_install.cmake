@@ -1,4 +1,4 @@
-# Install script for directory: /home/k/UR_RTDE_Examples
+# Install script for directory: /home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/k/UR_RTDE_Examples/build/3_party_library/filter_iir/cmake_install.cmake")
+  include("/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/build/3_party_library/filter_iir/cmake_install.cmake")
 
 endif()
 
@@ -51,5 +51,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/k/UR_RTDE_Examples/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

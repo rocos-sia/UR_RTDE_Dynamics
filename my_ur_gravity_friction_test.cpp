@@ -96,8 +96,10 @@ double joint_4_gravity_friction(double Q2, double Q3, double Q4, double Q5, doub
     static constexpr double b = -0.07984;
     static constexpr double c = 24.78;
     static constexpr double d = 0.2347;
+    static constexpr double static_frition =  -0.234 ;
 
-    double friction = my_sign(x) * (a + b * exp(-c * my_abs(x)) + d * my_abs(x));
+
+    double friction =  (!my_sign(x)) * static_frition +  my_sign(x) * (a + b * exp(-c * my_abs(x)) + d * my_abs(x));
 
     std::cout << "摩擦力 = " << friction << std::endl;
     std::cout << "重力 = " << gravity << std::endl;
@@ -168,15 +170,15 @@ int main(int argc, char *argv[])
     std::thread recored_thread{thread_ur_record_data};
 
     for (auto &iot : init_q)
-        iot = -90 * deg2rad;
+        iot = 120 * deg2rad;
 
     std::vector<double> init_q1 = {
-        100* deg2rad,
-        -100* deg2rad,
-        60* deg2rad,
-        67* deg2rad,
-        93* deg2rad,
-        0* deg2rad,
+        -120* deg2rad,
+        -120* deg2rad,
+        -120* deg2rad,
+        80* deg2rad,
+        80* deg2rad,
+        80* deg2rad,
     };
 
     // rtde_control.moveJ(init_q, 3 * deg2rad, 10 * deg2rad, false);

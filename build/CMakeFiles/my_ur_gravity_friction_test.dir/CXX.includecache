@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/k/UR_RTDE_Examples/my_ur_gravity_friction_test.cpp
+/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/my_ur_gravity_friction_test.cpp
 ur_rtde/rtde_control_interface.h
 -
 ur_rtde/rtde_receive_interface.h

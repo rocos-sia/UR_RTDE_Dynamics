@@ -1,4 +1,4 @@
-# Install script for directory: /home/k/UR_RTDE_Examples/3_party_library/filter_iir
+# Install script for directory: /home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/3_party_library/filter_iir
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

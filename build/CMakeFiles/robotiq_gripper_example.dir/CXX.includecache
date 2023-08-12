@@ -6,3 +6,13 @@
 
 #IncludeRegexTransform: 
 
+/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/robotiq_gripper_example.cpp
+ur_rtde/robotiq_gripper.h
+-
+chrono
+-
+iostream
+-
+thread
+-
+

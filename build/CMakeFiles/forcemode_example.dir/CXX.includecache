@@ -6,3 +6,11 @@
 
 #IncludeRegexTransform: 
 
+/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/forcemode_example.cpp
+ur_rtde/rtde_control_interface.h
+-
+thread
+-
+chrono
+-
+
