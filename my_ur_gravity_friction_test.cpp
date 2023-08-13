@@ -86,8 +86,7 @@ double my_abs(double x)
 
 double joint_4_gravity_friction(double Q2, double Q3, double Q4, double Q5, double Q6, double x)
 {
-
-    static constexpr std::array<double, 8> slover = { 0.2367,    -0.0345,    -0.0045,    -0.0372,     0.0191,     0.0067,     0.0237,     0.0375};
+    static constexpr std::array<double, 8> slover = { 0.2372,    -0.0025,    -0.0057,    -0.0665,    0.0282,    0.0145,    0.0512,    0.0699 };
 
     double gravity =
         sin(Q2 + Q3 + Q4) * slover[0] + cos(Q2 + Q3 + Q4) * sin(Q5) * slover[1] + cos(Q2 + Q3 + Q4) * slover[2] + cos(Q5) * cos(Q2 + Q3 + Q4) * slover[3] + cos(Q6) * sin(Q2 + Q3 + Q4) * slover[4] + sin(Q6) * sin(Q2 + Q3 + Q4) * slover[5] + cos(Q5) * cos(Q6) * cos(Q2 + Q3 + Q4) * slover[6] + cos(Q5) * cos(Q2 + Q3 + Q4) * sin(Q6) * slover[7];
