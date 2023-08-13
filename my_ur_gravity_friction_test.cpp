@@ -87,7 +87,7 @@ double my_abs(double x)
 double joint_4_gravity_friction(double Q2, double Q3, double Q4, double Q5, double Q6, double x)
 {
 
-    static constexpr std::array<double, 8> slover = {0.7709, -0.4173, -0.4617, -0.0121, -0.3078, 0.5395, 0.4926, -0.0700};
+    static constexpr std::array<double, 8> slover = { 0.2367,    -0.0345,    -0.0045,    -0.0372,     0.0191,     0.0067,     0.0237,     0.0375};
 
     double gravity =
         sin(Q2 + Q3 + Q4) * slover[0] + cos(Q2 + Q3 + Q4) * sin(Q5) * slover[1] + cos(Q2 + Q3 + Q4) * slover[2] + cos(Q5) * cos(Q2 + Q3 + Q4) * slover[3] + cos(Q6) * sin(Q2 + Q3 + Q4) * slover[4] + sin(Q6) * sin(Q2 + Q3 + Q4) * slover[5] + cos(Q5) * cos(Q6) * cos(Q2 + Q3 + Q4) * slover[6] + cos(Q5) * cos(Q2 + Q3 + Q4) * sin(Q6) * slover[7];
@@ -96,7 +96,7 @@ double joint_4_gravity_friction(double Q2, double Q3, double Q4, double Q5, doub
     static constexpr double b = -0.07984;
     static constexpr double c = 24.78;
     static constexpr double d = 0.2347;
-    static constexpr double static_frition =  -0.234 ;
+    static constexpr double static_frition =  -0.08 ;
 
 
     double friction =  (!my_sign(x)) * static_frition +  my_sign(x) * (a + b * exp(-c * my_abs(x)) + d * my_abs(x));
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
 
     std::vector<double> init_q1 = {
         -120* deg2rad,
-        -120* deg2rad,
+        -80* deg2rad,
         -120* deg2rad,
         80* deg2rad,
         80* deg2rad,

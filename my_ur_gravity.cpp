@@ -3,7 +3,7 @@
 #include <chrono>
 #include <thread>
 #include <fstream>
-#include  "interpolate.h"
+#include "interpolate.h"
 
 using namespace ur_rtde;
 using namespace std::chrono;
@@ -14,7 +14,6 @@ bool flag_loop = true;
 int direction = 0;
 std::ofstream csv_record{};
 
-
 void raiseFlag(int param)
 {
     flag_loop = false;
@@ -24,7 +23,7 @@ void thread_ur_record_data()
 {
 
     RTDEReceiveInterface rtde_receive("192.168.3.101");
-    csv_record.open("ur_frcition.csv");
+    csv_record.open("/home/k/UR_RTDE_Dynamics/UR_RTDE_Dynamics/ur_gravity.csv");
 
     if (!csv_record.is_open())
     {
@@ -57,7 +56,7 @@ int main(int argc, char *argv[])
     const double deg2rad = 0.017453292519943295769236907684886127; // PI/180
     RTDEControlInterface rtde_control("192.168.3.101");
 
-    std::vector< double > init_q = {
+    std::vector<double> init_q = {
         3.05432619099008,
         1.0471975511966,
         -2.61799387799149,
@@ -67,61 +66,67 @@ int main(int argc, char *argv[])
     };
 
     signal(SIGINT, raiseFlag);
-    rtde_control.moveJ(init_q, 0.6, 1.4, false);
+    // rtde_control.moveJ(init_q, 0.6, 1.4, false);
 
     sleep(2);
     std::thread recored_thread{thread_ur_record_data};
 
     rocos::DoubleS T_VEL;
-    T_VEL.planDoubleSProfile( 0, -150 * deg2rad, 150 * deg2rad, 0, 0, 1 * deg2rad, 3 * deg2rad , 30 * deg2rad);
-    if ( !T_VEL.isValidMovement( ) )
+    T_VEL.planDoubleSProfile(0, -150 * deg2rad, 150 * deg2rad, 0, 0, 1 * deg2rad, 3 * deg2rad, 30 * deg2rad);
+    if (!T_VEL.isValidMovement())
     {
         std::cout << "规划失败" << std::endl;
         flag_loop = false;
-        exit( -1 );
+        exit(-1);
     }
 
-    double pos_lim = ( 150 ) * deg2rad;
-    double vel_lim = ( 6 ) * deg2rad;
+    double pos_lim = (150) * deg2rad;
+    double vel_lim = (6) * deg2rad;
+    double pos_lim_2 = pos_lim * 0.86 ;
+    double vel_lim_2 = vel_lim * 0.86;
+    T_VEL.my_scaleToDuration(4 * KDL_PI / (vel_lim / pos_lim), 0, -150 * deg2rad, 150 * deg2rad, 0, 0);
 
-    T_VEL.my_scaleToDuration( 4 * KDL_PI / ( vel_lim / pos_lim ), 0, -150 * deg2rad, 150 * deg2rad, 0, 0 );
+    double t_total_1 = T_VEL.getDuration();
 
-    double t_total_1 = T_VEL.getDuration( );
-
-    double velocity       = 0.5;
-    double acceleration   = 0.5;
-    double servo_dt             = 1.0 / 500;  // 2ms
+    double velocity = 0.5;
+    double acceleration = 0.5;
+    double servo_dt = 1.0 / 500; // 2ms
     double lookahead_time = 0.1;
-    double gain           = 300;
+    double gain = 300;
 
     std::cout << "t_total_1 = " << t_total_1 << std::endl;
 
-    for(double dt = 0;dt<=t_total_1;dt+=0.002)
+    for (double dt = 0; dt <= t_total_1; dt += 0.002)
     {
-        auto t_start = high_resolution_clock::now( );
+        auto t_start = high_resolution_clock::now();
 
-        init_q[3] =  180 * deg2rad  +   T_VEL.pos(dt);
-        double ref_pos = pos_lim * cos( vel_lim * dt / pos_lim );
+        init_q[3] = 180 * deg2rad + T_VEL.pos(dt);
+        double ref_pos = pos_lim * cos(vel_lim * dt / pos_lim);
+        double ref_pos_2 = pos_lim_2 * cos(vel_lim_2 * dt / pos_lim_2);
         // init_q[0] = ref_pos;
-        init_q[ 1 ] = -90 * deg2rad + ref_pos;
-        init_q[ 2 ] = -ref_pos ;
-        init_q[ 4 ] = ref_pos;
-        init_q[ 5 ] = -ref_pos;
+        init_q[1] = -90 * deg2rad + ref_pos;
+        init_q[2] = -ref_pos;
+        init_q[4] = ref_pos_2;
+        init_q[5] = -ref_pos;
 
-        direction = 1;
-
-        rtde_control.servoJ( init_q, velocity, acceleration, servo_dt, lookahead_time, gain );
-       
-        auto t_stop     = high_resolution_clock::now( );
-        auto t_duration = std::chrono::duration< double >( t_stop - t_start );
-         if ( t_duration.count( ) < 0.002 )
+        if (direction == 0)
         {
-            std::this_thread::sleep_for( std::chrono::duration< double >(  0.002  - t_duration.count( ) ) );
+            rtde_control.moveJ(init_q, 0.6, 1.4, false);
+            direction = 1;
+        }
+
+        rtde_control.servoJ(init_q, velocity, acceleration, servo_dt, lookahead_time, gain);
+
+        auto t_stop = high_resolution_clock::now();
+        auto t_duration = std::chrono::duration<double>(t_stop - t_start);
+        if (t_duration.count() < 0.002)
+        {
+            std::this_thread::sleep_for(std::chrono::duration<double>(0.002 - t_duration.count()));
         }
     }
 
     rocos::DoubleS T_VEL2;
-    T_VEL2.planDoubleSProfile( 0, 150 * deg2rad, -150 * deg2rad, 0, 0, 1 * deg2rad, 3 * deg2rad , 30 * deg2rad);
+    T_VEL2.planDoubleSProfile(0, 150 * deg2rad, -150 * deg2rad, 0, 0, 1 * deg2rad, 3 * deg2rad, 30 * deg2rad);
 
     if (!T_VEL2.isValidMovement())
     {
@@ -129,38 +134,39 @@ int main(int argc, char *argv[])
         flag_loop = false;
         exit(-1);
     }
-    T_VEL2.my_scaleToDuration( 4 * KDL_PI / ( vel_lim / pos_lim ), 0, 150 * deg2rad, -150 * deg2rad, 0, 0 );
-    double t_total_2 = T_VEL2.getDuration( );
+    T_VEL2.my_scaleToDuration(4 * KDL_PI / (vel_lim / pos_lim), 0, 150 * deg2rad, -150 * deg2rad, 0, 0);
+    double t_total_2 = T_VEL2.getDuration();
     std::cout << "t_total_2 = " << t_total_2 << std::endl;
 
-    for(double dt = t_total_1;dt<=t_total_1+t_total_2;dt+=0.002)
+    for (double dt = t_total_1; dt <= t_total_1 + t_total_2; dt += 0.002)
     {
-        auto t_start = high_resolution_clock::now( );
+        auto t_start = high_resolution_clock::now();
 
-        init_q[3] =  180 * deg2rad  +   T_VEL2.pos(dt-t_total_1);
-        std::cout<< " init_q[3]-- =  "<< init_q[3]<<std::endl;
+        init_q[3] = 180 * deg2rad + T_VEL2.pos(dt - t_total_1);
+      
         double ref_pos = pos_lim * cos(vel_lim * dt / pos_lim);
+        double ref_pos_2 = pos_lim_2 * cos(vel_lim_2 * dt / pos_lim_2);
         // init_q[0] = ref_pos;
-        init_q[ 1 ] = -90 * deg2rad + ref_pos;
-        init_q[ 2 ] = -ref_pos ;
-        init_q[ 4 ] = ref_pos;
-        init_q[ 5 ] = -ref_pos;
+        init_q[1] = -90 * deg2rad + ref_pos;
+        init_q[2] = -ref_pos;
+        init_q[4] = ref_pos_2;
+        init_q[5] = -ref_pos;
 
         direction = 2;
-        rtde_control.servoJ( init_q, velocity, acceleration, servo_dt, lookahead_time, gain );
+        rtde_control.servoJ(init_q, velocity, acceleration, servo_dt, lookahead_time, gain);
 
-        auto t_stop     = high_resolution_clock::now( );
-        auto t_duration = std::chrono::duration< double >( t_stop - t_start );
-         if ( t_duration.count( ) < 0.002 )
+        auto t_stop = high_resolution_clock::now();
+        auto t_duration = std::chrono::duration<double>(t_stop - t_start);
+        if (t_duration.count() < 0.002)
         {
-            std::this_thread::sleep_for( std::chrono::duration< double >(  0.002  - t_duration.count( ) ) );
+            std::this_thread::sleep_for(std::chrono::duration<double>(0.002 - t_duration.count()));
         }
     }
-
 
     // Stop the RTDE control script
     rtde_control.stopScript();
     std::cout << "正在退出" << std::endl;
+    flag_loop = false;
     recored_thread.join();
     csv_record.close();
 
