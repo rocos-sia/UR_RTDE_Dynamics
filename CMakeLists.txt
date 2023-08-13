@@ -29,7 +29,7 @@ add_subdirectory(3_party_library/filter_iir)
 
 # ===============  自己的例子放此位置  =========================#
 
-set(List_own moving_fluid my_ur_friction  my_ur_gravity my_ur_gravity_friction_test)
+set(List_own moving_fluid my_ur_friction  my_ur_gravity my_ur_gravity_friction_test my_ur_gravity_friction_admittance_test)
 # ========================================#
 
 set(LIST ${List_official} ${List_own})

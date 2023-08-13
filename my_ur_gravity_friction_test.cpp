@@ -84,9 +84,9 @@ double my_abs(double x)
         return -x;
 }
 
-double joint_4_gravity_friction(double Q2, double Q3, double Q4, double Q5, double Q6, double x)
+double joint_4_gravity_friction(double Q2, double Q3, double Q4, double Q5, double Q6, double x, double static_frition = 0)
 {
-    static constexpr std::array<double, 8> slover = { 0.2372,    -0.0025,    -0.0057,    -0.0665,    0.0282,    0.0145,    0.0512,    0.0699 };
+    static constexpr std::array<double, 8> slover = {0.2372, -0.0025, -0.0057, -0.0665, 0.0282, 0.0145, 0.0512, 0.0699};
 
     double gravity =
         sin(Q2 + Q3 + Q4) * slover[0] + cos(Q2 + Q3 + Q4) * sin(Q5) * slover[1] + cos(Q2 + Q3 + Q4) * slover[2] + cos(Q5) * cos(Q2 + Q3 + Q4) * slover[3] + cos(Q6) * sin(Q2 + Q3 + Q4) * slover[4] + sin(Q6) * sin(Q2 + Q3 + Q4) * slover[5] + cos(Q5) * cos(Q6) * cos(Q2 + Q3 + Q4) * slover[6] + cos(Q5) * cos(Q2 + Q3 + Q4) * sin(Q6) * slover[7];
@@ -95,10 +95,8 @@ double joint_4_gravity_friction(double Q2, double Q3, double Q4, double Q5, doub
     static constexpr double b = -0.07984;
     static constexpr double c = 24.78;
     static constexpr double d = 0.2347;
-    static constexpr double static_frition =  -0.08 ;
 
-
-    double friction =  (!my_sign(x)) * static_frition +  my_sign(x) * (a + b * exp(-c * my_abs(x)) + d * my_abs(x));
+    double friction = (!my_sign(x)) * static_frition + my_sign(x) * (a + b * exp(-c * my_abs(x)) + d * my_abs(x));
 
     std::cout << "摩擦力 = " << friction << std::endl;
     std::cout << "重力 = " << gravity << std::endl;
@@ -108,6 +106,7 @@ double joint_4_gravity_friction(double Q2, double Q3, double Q4, double Q5, doub
 void thread_ur_record_data()
 {
     RTDEReceiveInterface rtde_receive("192.168.3.101");
+    static double static_frition = 0;
 
     csv_record.open("/home/k/UR_RTDE_Examples/ur_test.csv");
 
@@ -131,12 +130,17 @@ void thread_ur_record_data()
                    << current_pos[0] << "\t," << current_pos[1] << "\t," << current_pos[2] << "\t," << current_pos[3] << "\t,"
                    << current_pos[4] << "\t," << current_pos[5] << "\t," << real_current << "\t,";
 
-        double theory_current = joint_4_gravity_friction(current_pos[1], current_pos[2], current_pos[3], current_pos[4], current_pos[5], current_vel[3]);
+        if (current_vel[3] == 0 && static_frition == 0)
+            static_frition = current_vel[3];
+
+        double theory_current = joint_4_gravity_friction(current_pos[1], current_pos[2], current_pos[3], current_pos[4], current_pos[5], current_vel[3],static_frition);
         std::cout << "理论电流 = " << theory_current << std::endl;
         std::cout << "实际电流 = " << real_current << std::endl;
         std::cout << "误差 = " << theory_current - real_current << std::endl;
 
         csv_record << theory_current << "\n";
+
+
 
         auto t_stop = steady_clock::now();
         auto t_duration = std::chrono::duration<double>(t_stop - t_start);
@@ -172,17 +176,16 @@ int main(int argc, char *argv[])
         iot = 120 * deg2rad;
 
     std::vector<double> init_q1 = {
-        -120* deg2rad,
-        -80* deg2rad,
-        -120* deg2rad,
-        80* deg2rad,
-        80* deg2rad,
-        80* deg2rad,
+        -120 * deg2rad,
+        -80 * deg2rad,
+        -120 * deg2rad,
+        80 * deg2rad,
+        80 * deg2rad,
+        80 * deg2rad,
     };
 
     // rtde_control.moveJ(init_q, 3 * deg2rad, 10 * deg2rad, false);
     rtde_control.moveJ(init_q1, 3 * deg2rad, 10 * deg2rad, false);
-
 
     // Stop the RTDE control script
     rtde_control.stopScript();
