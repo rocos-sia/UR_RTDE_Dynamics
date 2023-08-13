@@ -11,13 +11,14 @@ using namespace std::chrono;
 #define KDL_PI 3.14159265358979323846
 
 bool flag_loop = true;
+int direction = 0;
+std::ofstream csv_record{};
+
+
 void raiseFlag(int param)
 {
     flag_loop = false;
 }
-
-int direction = 0;
-std::ofstream csv_record{};
 
 void thread_ur_record_data()
 {
@@ -38,7 +39,7 @@ void thread_ur_record_data()
         auto current_pos = rtde_receive.getActualQ();
         auto current_vel = rtde_receive.getActualQd();
         auto current_cut = rtde_receive.getActualCurrent();
-        csv_record << 0 << "\t," << 0 << "\t," << std::fixed << std::setprecision(10) << current_vel[3] << "\t," << current_cut[3] << "\t,"
+        csv_record << 0 << "\t," << direction << "\t," << std::fixed << std::setprecision(10) << current_vel[3] << "\t," << current_cut[3] << "\t,"
                    << current_pos[0] << "\t," << current_pos[1] << "\t," << current_pos[2] << "\t," << current_pos[3] << "\t,"
                    << current_pos[4] << "\t," << current_pos[5] << "\n";
 
@@ -94,6 +95,7 @@ int main(int argc, char *argv[])
     double gain           = 300;
 
     std::cout << "t_total_1 = " << t_total_1 << std::endl;
+
     for(double dt = 0;dt<=t_total_1;dt+=0.002)
     {
         auto t_start = high_resolution_clock::now( );
@@ -105,6 +107,8 @@ int main(int argc, char *argv[])
         init_q[ 2 ] = -ref_pos ;
         init_q[ 4 ] = ref_pos;
         init_q[ 5 ] = -ref_pos;
+
+        direction = 1;
 
         rtde_control.servoJ( init_q, velocity, acceleration, servo_dt, lookahead_time, gain );
        
@@ -142,6 +146,7 @@ int main(int argc, char *argv[])
         init_q[ 4 ] = ref_pos;
         init_q[ 5 ] = -ref_pos;
 
+        direction = 2;
         rtde_control.servoJ( init_q, velocity, acceleration, servo_dt, lookahead_time, gain );
 
         auto t_stop     = high_resolution_clock::now( );
