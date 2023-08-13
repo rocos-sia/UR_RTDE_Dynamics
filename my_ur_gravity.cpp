@@ -56,14 +56,15 @@ int main(int argc, char *argv[])
     const double deg2rad = 0.017453292519943295769236907684886127; // PI/180
     RTDEControlInterface rtde_control("192.168.3.101");
 
-    std::vector<double> init_q = {
-        175 * deg2rad,
-        175 * deg2rad,
-        175 * deg2rad,
-        175 * deg2rad,
-        175 * deg2rad,
-        175 * deg2rad,
+    std::vector< double > init_q = {
+        3.05432619099008,
+        1.0471975511966,
+        -2.61799387799149,
+        0.523598775598299,
+        2.61799387799149,
+        -2.61799387799149,
     };
+
     signal(SIGINT, raiseFlag);
     rtde_control.moveJ(init_q, 0.6, 1.4, false);
 
