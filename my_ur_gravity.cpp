@@ -8,6 +8,8 @@
 using namespace ur_rtde;
 using namespace std::chrono;
 
+#define KDL_PI 3.14159265358979323846
+
 bool flag_loop = true;
 void raiseFlag(int param)
 {
@@ -68,18 +70,21 @@ int main(int argc, char *argv[])
     sleep(2);
     std::thread recored_thread{thread_ur_record_data};
 
-    rocos::R_INTERP T_VEL;
-    bool isplanned = T_VEL.planTrapezoidProfile(0, 175 * deg2rad, -175 * deg2rad, 0, 0, 1 * deg2rad, 3 * deg2rad);
-    if (!isplanned)
+    rocos::DoubleS T_VEL;
+    T_VEL.planDoubleSProfile( 0, -150 * deg2rad, 150 * deg2rad, 0, 0, 1 * deg2rad, 3 * deg2rad , 30 * deg2rad);
+    if ( !T_VEL.isValidMovement( ) )
     {
         std::cout << "规划失败" << std::endl;
         flag_loop = false;
-        exit(-1);
+        exit( -1 );
     }
-    double t_total_1 =  T_VEL.getDuration();
 
-    double pos_lim = (175) * deg2rad;
-    double vel_lim = (3) * deg2rad;
+    double pos_lim = ( 150 ) * deg2rad;
+    double vel_lim = ( 6 ) * deg2rad;
+
+    T_VEL.my_scaleToDuration( 4 * KDL_PI / ( vel_lim / pos_lim ), 0, -150 * deg2rad, 150 * deg2rad, 0, 0 );
+
+    double t_total_1 = T_VEL.getDuration( );
 
     double velocity       = 0.5;
     double acceleration   = 0.5;
@@ -87,18 +92,21 @@ int main(int argc, char *argv[])
     double lookahead_time = 0.1;
     double gain           = 300;
 
+    std::cout << "t_total_1 = " << t_total_1 << std::endl;
     for(double dt = 0;dt<=t_total_1;dt+=0.002)
     {
         auto t_start = high_resolution_clock::now( );
 
-        init_q[3] = T_VEL.pos(dt);
-        double ref_pos = pos_lim * cos(vel_lim * dt / pos_lim);
-        init_q[0] = ref_pos;
-        init_q[1] = ref_pos;
-        init_q[2] = ref_pos;
-        init_q[4] = ref_pos;
-        init_q[5] = ref_pos;
+        init_q[3] =  180 * deg2rad  +   T_VEL.pos(dt);
+        double ref_pos = pos_lim * cos( vel_lim * dt / pos_lim );
+        // init_q[0] = ref_pos;
+        init_q[ 1 ] = -90 * deg2rad + ref_pos;
+        init_q[ 2 ] = -ref_pos ;
+        init_q[ 4 ] = ref_pos;
+        init_q[ 5 ] = -ref_pos;
+
         rtde_control.servoJ( init_q, velocity, acceleration, servo_dt, lookahead_time, gain );
+       
         auto t_stop     = high_resolution_clock::now( );
         auto t_duration = std::chrono::duration< double >( t_stop - t_start );
          if ( t_duration.count( ) < 0.002 )
@@ -107,28 +115,34 @@ int main(int argc, char *argv[])
         }
     }
 
+    rocos::DoubleS T_VEL2;
+    T_VEL2.planDoubleSProfile( 0, 150 * deg2rad, -150 * deg2rad, 0, 0, 1 * deg2rad, 3 * deg2rad , 30 * deg2rad);
 
-     isplanned = T_VEL.planTrapezoidProfile(0,-175 * deg2rad, 175 * deg2rad, 0, 0, 1 * deg2rad, 3 * deg2rad);
-    if (!isplanned)
+    if (!T_VEL2.isValidMovement())
     {
         std::cout << "规划失败" << std::endl;
         flag_loop = false;
         exit(-1);
     }
-    double t_total_2 =  T_VEL.getDuration();
+    T_VEL2.my_scaleToDuration( 4 * KDL_PI / ( vel_lim / pos_lim ), 0, 150 * deg2rad, -150 * deg2rad, 0, 0 );
+    double t_total_2 = T_VEL2.getDuration( );
+    std::cout << "t_total_2 = " << t_total_2 << std::endl;
 
     for(double dt = t_total_1;dt<=t_total_1+t_total_2;dt+=0.002)
     {
         auto t_start = high_resolution_clock::now( );
 
-        init_q[3] = T_VEL.pos(dt-t_total_1);
+        init_q[3] =  180 * deg2rad  +   T_VEL2.pos(dt-t_total_1);
+        std::cout<< " init_q[3]-- =  "<< init_q[3]<<std::endl;
         double ref_pos = pos_lim * cos(vel_lim * dt / pos_lim);
-        init_q[0] = ref_pos;
-        init_q[1] = ref_pos;
-        init_q[2] = ref_pos;
-        init_q[4] = ref_pos;
-        init_q[5] = ref_pos;
+        // init_q[0] = ref_pos;
+        init_q[ 1 ] = -90 * deg2rad + ref_pos;
+        init_q[ 2 ] = -ref_pos ;
+        init_q[ 4 ] = ref_pos;
+        init_q[ 5 ] = -ref_pos;
+
         rtde_control.servoJ( init_q, velocity, acceleration, servo_dt, lookahead_time, gain );
+
         auto t_stop     = high_resolution_clock::now( );
         auto t_duration = std::chrono::duration< double >( t_stop - t_start );
          if ( t_duration.count( ) < 0.002 )
