@@ -14,6 +14,10 @@ bool flag_loop = true;
 std::atomic<double> extern_force_Pos_offset{0};
 constexpr double deg2rad = 0.017453292519943295769236907684886127; // PI/180
 
+RTDEControlInterface rtde_control("192.168.3.101");
+
+
+
 void raiseFlag(int param)
 {
     flag_loop = false;
@@ -89,8 +93,8 @@ double my_abs(double x)
 
 double joint_4_gravity_friction(double Q2, double Q3, double Q4, double Q5, double Q6, double x, double static_frition )
 {
-    static constexpr std::array<double, 8> slover = {0.2372, -0.0025, -0.0057, -0.0665, 0.0282, 0.0145, 0.0512, 0.0699};
-
+    static constexpr std::array<double, 8> slover = {0.2369,   -0.0044,   -0.0686,    0.0274,    0.0148,    0.0521,    0.0724};
+    
     double gravity =
         sin(Q2 + Q3 + Q4) * slover[0] + cos(Q2 + Q3 + Q4) * sin(Q5) * slover[1] + cos(Q2 + Q3 + Q4) * slover[2] + cos(Q5) * cos(Q2 + Q3 + Q4) * slover[3] + cos(Q6) * sin(Q2 + Q3 + Q4) * slover[4] + sin(Q6) * sin(Q2 + Q3 + Q4) * slover[5] + cos(Q5) * cos(Q6) * cos(Q2 + Q3 + Q4) * slover[6] + cos(Q5) * cos(Q2 + Q3 + Q4) * sin(Q6) * slover[7];
 
@@ -113,8 +117,9 @@ double one_freedom_admittance(double force)
     static double force_last_vel_offset = 0;
     static double dt = 0.002;
     static double K = 0;
-    static double M = 0.5;
-    static double B =1;
+    static double M = 0.5*0.6;
+    static double B =1.5;
+   
 
     double force_acc_offset = (force - B * force_vel_offset - K * force_pos_offset) / M;
     force_vel_offset = dt * (force_acc_offset + force_last_acc_offset) / 2 + force_vel_offset;
@@ -129,6 +134,7 @@ double one_freedom_admittance(double force)
 void thread_ur_record_data()
 {
     RTDEReceiveInterface rtde_receive("192.168.3.101");
+    // RTDEControlInterface rtde_control("192.168.3.101");
     static double static_frition = 0;
 
     csv_record.open("/home/k/UR_RTDE_Examples/ur_test.csv");
@@ -146,7 +152,7 @@ void thread_ur_record_data()
         auto current_pos = rtde_receive.getActualQ();
         auto current_vel = rtde_receive.getActualQd();
         auto current_cut = rtde_receive.getActualCurrent();
-        double real_current = my_filter(current_cut[3], 500);
+        double real_current = my_filter(current_cut[3], 100);
 
         csv_record << 0 << "\t,"
                    << 0 << "\t," << std::fixed << std::setprecision(10) << current_vel[3] << "\t," << current_cut[3] << "\t,"
@@ -156,10 +162,12 @@ void thread_ur_record_data()
       
 
         double theory_current = joint_4_gravity_friction(current_pos[1], current_pos[2], current_pos[3], current_pos[4], current_pos[5], current_vel[3], static_frition);
+        double ur_torqe=rtde_control.getJointTorques()[3];
         std::cout << "理论电流 = " << theory_current << std::endl;
         std::cout << "实际电流 = " << real_current << std::endl;
         double error_current = -real_current + theory_current;
         std::cout << "电流误差 = " << error_current << std::endl;
+        std::cout << "ur补偿后的力矩 = " << ur_torqe << std::endl;
 
         if (( current_vel[3])== 0 && static_frition == 0)
             static_frition = -error_current;
@@ -184,7 +192,7 @@ void thread_ur_record_data()
 
 int main(int argc, char *argv[])
 {
-    RTDEControlInterface rtde_control("192.168.3.101");
+    // RTDEControlInterface rtde_control("192.168.3.101");
 
   
     signal(SIGINT, raiseFlag);
